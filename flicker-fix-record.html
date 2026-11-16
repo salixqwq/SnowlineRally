@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SnowlineRally 全屏白屏闪烁修复记录</title>
+<style>
+  :root {
+    --ink: #1c2b3a;
+    --ink-soft: #51637a;
+    --line: #dbe6f0;
+    --bg: #f6fafd;
+    --card: #ffffff;
+    --accent: #0a7ccf;
+    --accent-soft: #e3f1fb;
+    --ok: #1a8a4a;
+    --ok-soft: #e4f5ea;
+    --warn: #b96a00;
+    --warn-soft: #fdf3e2;
+    --danger: #c0392b;
+    --danger-soft: #fbe9e7;
+    --code-bg: #0f1e2d;
+    --code-ink: #d7e6f2;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "HarmonyOS Sans SC", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.75;
+    padding: 40px 16px 80px;
+  }
+  .page { max-width: 960px; margin: 0 auto; }
+  header.hero {
+    background: linear-gradient(135deg, #0c3a5e 0%, #0a7ccf 60%, #35a3e0 100%);
+    color: #fff;
+    border-radius: 16px;
+    padding: 36px 40px 32px;
+    margin-bottom: 28px;
+  }
+  header.hero h1 { font-size: 26px; letter-spacing: 0.5px; margin-bottom: 10px; }
+  header.hero p.sub { opacity: 0.92; font-size: 14.5px; }
+  .badges { margin-top: 18px; display: flex; flex-wrap: wrap; gap: 10px; }
+  .badge {
+    display: inline-block; padding: 4px 14px; border-radius: 999px;
+    font-size: 13px; font-weight: 600; background: rgba(255,255,255,0.16);
+    border: 1px solid rgba(255,255,255,0.35);
+  }
+  .badge.ok { background: #17c964; border-color: #17c964; color: #053018; }
+  section.card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 26px 30px;
+    margin-bottom: 22px;
+  }
+  section.card > h2 {
+    font-size: 19px; margin-bottom: 16px; padding-bottom: 10px;
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 10px;
+  }
+  section.card > h2 .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 28px; height: 28px; border-radius: 8px; flex: none;
+    background: var(--accent); color: #fff; font-size: 14px;
+  }
+  h3 { font-size: 15.5px; margin: 18px 0 8px; color: var(--ink); }
+  p, li { font-size: 14.5px; color: var(--ink); }
+  p.soft, li.soft { color: var(--ink-soft); }
+  ul, ol { padding-left: 22px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  code {
+    font-family: "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
+    font-size: 13px; background: var(--accent-soft); color: #0b5d96;
+    padding: 1px 6px; border-radius: 5px;
+  }
+  pre {
+    background: var(--code-bg); color: var(--code-ink);
+    border-radius: 10px; padding: 16px 18px; overflow-x: auto;
+    font-size: 13px; line-height: 1.65; margin: 12px 0;
+    font-family: "JetBrains Mono", "Cascadia Code", Menlo, Consolas, monospace;
+  }
+  pre .add { color: #6fe3a0; }
+  pre .del { color: #ff9d8a; }
+  pre .cmt { color: #7f97ab; }
+  table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 13.5px; }
+  th, td { border: 1px solid var(--line); padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--accent-soft); color: #0b5d96; font-weight: 600; white-space: nowrap; }
+  tr:nth-child(even) td { background: #fbfdfe; }
+  .tag {
+    display: inline-block; padding: 2px 10px; border-radius: 6px;
+    font-size: 12.5px; font-weight: 600; white-space: nowrap;
+  }
+  .tag.ok { background: var(--ok-soft); color: var(--ok); }
+  .tag.no { background: var(--danger-soft); color: var(--danger); }
+  .tag.warn { background: var(--warn-soft); color: var(--warn); }
+  .tag.info { background: var(--accent-soft); color: var(--accent); }
+  .callout {
+    border-left: 4px solid var(--accent); background: var(--accent-soft);
+    border-radius: 0 10px 10px 0; padding: 12px 18px; margin: 14px 0; font-size: 14px;
+  }
+  .callout.key { border-left-color: var(--ok); background: var(--ok-soft); }
+  .callout.warn { border-left-color: var(--warn); background: var(--warn-soft); }
+  .timeline { list-style: none; padding-left: 0; margin: 10px 0; }
+  .timeline li {
+    position: relative; padding: 0 0 18px 34px; margin: 0;
+  }
+  .timeline li::before {
+    content: ""; position: absolute; left: 9px; top: 7px;
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--accent); box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+  .timeline li::after {
+    content: ""; position: absolute; left: 13px; top: 22px; bottom: 0;
+    width: 1.5px; background: var(--line);
+  }
+  .timeline li:last-child::after { display: none; }
+  .timeline .t-title { font-weight: 600; font-size: 14.5px; }
+  .timeline .t-time { font-size: 12.5px; color: var(--ink-soft); font-family: Menlo, Consolas, monospace; }
+  .timeline .t-body { font-size: 14px; color: var(--ink-soft); margin-top: 2px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media (max-width: 720px) { .grid2 { grid-template-columns: 1fr; } }
+  .kv {
+    border: 1px solid var(--line); border-radius: 10px; padding: 12px 16px; background: #fbfdfe;
+  }
+  .kv .k { font-size: 12.5px; color: var(--ink-soft); }
+  .kv .v { font-size: 14px; font-weight: 600; margin-top: 2px; word-break: break-all; }
+  footer { text-align: center; color: var(--ink-soft); font-size: 12.5px; margin-top: 30px; }
+</style>
+</head>
+<body>
+<div class="page">
+
+<header class="hero">
+  <h1>SnowlineRally · 全屏白屏闪烁修复记录</h1>
+  <p class="sub">HarmonyOS（2 in 1）Web 组件最大化后持续白闪问题的排查、定位与修复全过程</p>
+  <div class="badges">
+    <span class="badge ok">已修复 · 用户实测验证</span>
+    <span class="badge">2026-11-16</span>
+    <span class="badge">根因：ASYNC_RENDER 独立送显（DSS 硬件合成）缺陷</span>
+    <span class="badge">修复：renderMode: RenderMode.SYNC_RENDER</span>
+  </div>
+</header>
+
+<section class="card">
+  <h2><span class="num">1</span>问题概述</h2>
+  <p><strong>现象</strong>：应用在 2 in 1 设备上以默认窗口尺寸（浮动窗口）运行游戏完全正常；一旦点击「最大化」进入全屏（窗口铺满屏幕），画面立即开始<strong>持续白屏闪烁</strong>；还原窗口后恢复正常。</p>
+  <div class="callout warn">
+    <strong>用户观察到的关键特征</strong>（后经确认）：
+    <ul>
+      <li>全屏期间<strong>持续闪</strong>（游玩中、暂停时都闪），不是只在最大化切换瞬间闪；</li>
+      <li>白屏覆盖<strong>整个窗口</strong>；</li>
+      <li><strong>前端图标 UI 不闪，只有后面的图像在闪</strong> —— 说明 UI 层与背景图像层走的是不同的显示路径。</li>
+    </ul>
+  </div>
+</section>
+
+<section class="card">
+  <h2><span class="num">2</span>排查过程</h2>
+  <ul class="timeline">
+    <li>
+      <div class="t-title">排除：渲染进程崩溃 / 无限刷新循环</div>
+      <div class="t-body">此前曾存在另一个独立问题：系统回收渲染进程（SIGKILL，<code>RenderExitReason.ProcessWasKilled=1</code>）后旧恢复逻辑会在 <code>onPageEnd</code> 无条件重置计数，导致「回收 → 刷新 → 重载」死循环式白闪。该问题已通过<strong>时间感知的崩溃预算（60 秒稳定运行才重置）+ 后台延迟单次重载</strong>修复。但本次全屏白闪期间日志显示 GPU 全程 60fps 正常渲染、无 <code>KillRenderProcess</code>、无重载 —— 属于另一个问题。</div>
+    </li>
+    <li>
+      <div class="t-title">排除：WebGL 上下文丢失 / 表面重建</div>
+      <div class="t-body">全屏 2.8 秒窗口内日志无任何 context lost / restore；<code>NotifyFirstRealSwapBuffer</code> 频率与稳定期一致（约 60 次/秒），<code>needs_notify_first_swap_buffer: 1</code> 从未出现 —— 无表面反复重建。</div>
+    </li>
+    <li>
+      <div class="t-title">排除：窗口管理器 / 系统窗口层干扰</div>
+      <div class="t-body">全屏期间无 WMS 窗口层级事件风暴、无系统 overlay 显示/隐藏记录；NWeb 尺寸仅一次性变化（默认窗口 → 最大化），无尺寸振荡。</div>
+    </li>
+    <li>
+      <div class="t-title">排除：游戏内全屏 / 分辨率设置</div>
+      <div class="t-body">全文检索确认游戏 HTML 内无任何「全屏 / 分辨率 / 画质」设置项，也不调用 <code>requestFullscreen</code> —— 用户所述「全屏」即<strong>窗口最大化</strong>。</div>
+    </li>
+    <li>
+      <div class="t-title">关键实验：闪烁发生时连续截屏采样</div>
+      <div class="t-body">用户看着全屏画面正在闪烁的同时，以约 1.1 秒/张的节奏连续抓取 <strong>40 张全屏截屏（覆盖约 45 秒）</strong>，用纯 Node PNG 解码器逐像素统计白度。结果：<strong>40 张全部是稳定的游戏画面，零白帧，仅存在细微动画漂移</strong>。窗口状态同时确认游戏正处于最大化可见状态（Mode=1，Z 序最高应用窗口）。</div>
+      <div class="t-time">⇒ 结论：白闪不出现在合成器输出里 —— 问题位于<strong>合成器与显示面板之间</strong>的输出路径。</div>
+    </li>
+    <li>
+      <div class="t-title">文档定位：Web 组件渲染模式与 DSS</div>
+      <div class="t-body">查阅《Web组件渲染模式》文档：Web 默认 <code>ASYNC_RENDER</code> 模式下，Web 组件作为图形 surface 节点<strong>独立送显</strong>，由 <strong>DSS（显示子系统）硬件合成</strong>直扫输出；<code>SYNC_RENDER</code> 模式下 Web 作为 canvas 节点跟随系统组件一起送显，<strong>不走 DSS 合成</strong>。</div>
+    </li>
+  </ul>
+</section>
+
+<section class="card">
+  <h2><span class="num">3</span>根因</h2>
+  <div class="callout key">
+    <strong>Web 默认 ASYNC_RENDER 渲染模式下，Web 内容作为独立图形 surface 交给 DSS（显示子系统）硬件合成直扫。本机（2 in 1）在窗口最大化时，DSS 对这块接近全屏宽度的 Web surface 的扫描输出存在缺陷：</strong>
+    <ul>
+      <li>缓冲区内容本身完好（合成器截屏全部正常、GPU 60fps 正常渲染）；</li>
+      <li>但面板扫描输出交替读出<strong>空/未初始化缓冲 → 整窗白帧</strong>，形成持续白闪；</li>
+      <li>「UI 不闪、背景闪」与 DSS 分层直扫行为吻合 —— 不同内容层被分配到不同的显示合成路径，仅走直扫的背景层受影响；</li>
+      <li>默认窗口尺寸未触发该大 plane 路径，因此窗口模式正常。</li>
+    </ul>
+  </div>
+  <p class="soft">注：截屏由合成器读取正常缓冲生成，因此永远「拍不到」白帧；这是本问题初期难以用日志与截屏定位的原因。</p>
+</section>
+
+<section class="card">
+  <h2><span class="num">4</span>修复方案</h2>
+  <p>将 Web 组件改为<strong>同步渲染模式</strong>：Web 作为 canvas 节点跟随系统组件一起经 RenderService GPU 合成后统一送显，绕开 DSS 对 Web surface 的独立直扫路径。</p>
+  <h3>改动位置</h3>
+  <p><code>app/entry/src/main/ets/pages/Index.ets</code>（Web 组件构造参数）：</p>
+  <pre><span class="cmt">// 修复前：默认 ASYNC_RENDER，Web 独立送显（DSS 硬件合成），最大化时白闪</span>
+<span class="del">- Web({ src: $rawfile('snowline-rally.html'), controller: this.controller })</span>
+
+<span class="cmt">// 修复后：SYNC_RENDER，Web 作为 canvas 节点跟随系统组件一起送显</span>
+<span class="add">+ Web({ src: $rawfile('snowline-rally.html'), controller: this.controller, renderMode: RenderMode.SYNC_RENDER })</span></pre>
+  <h3>两种渲染模式对比</h3>
+  <table>
+    <tr><th></th><th>ASYNC_RENDER（默认）</th><th>SYNC_RENDER（本次采用）</th></tr>
+    <tr><td><strong>Web 形态</strong></td><td>图形 surface 节点，独立送显</td><td>图形 canvas 节点，跟随系统组件一起送显</td></tr>
+    <tr><td><strong>显示合成路径</strong></td><td>支持 DSS（显示子系统）硬件合成</td><td>不支持 DSS，走 RenderService GPU 合成</td></tr>
+    <tr><td><strong>本机表现</strong></td><td><span class="tag no">最大化持续白闪</span></td><td><span class="tag ok">稳定无闪</span></td></tr>
+    <tr><td><strong>性能开销</strong></td><td>更低（独立送显）</td><td>每帧多一次 GPU 合成（约 22MB/帧 @ 近全屏分辨率、60fps ≈ 1.3GB/s，核显可忽略）</td></tr>
+    <tr><td><strong>高度上限</strong></td><td>7,680px（物理像素）</td><td>500,000px（物理像素）</td></tr>
+    <tr><td><strong>切换限制</strong></td><td colspan="2">均不支持动态切换，须在 Web 组件创建时指定</td></tr>
+  </table>
+</section>
+
+<section class="card">
+  <h2><span class="num">5</span>验证结果</h2>
+  <table>
+    <tr><th>验证项</th><th>结果</th></tr>
+    <tr><td><code>check_ets_files</code> 静态检查（Index.ets）</td><td><span class="tag ok">通过，无诊断</span></td></tr>
+    <tr><td><code>devecocli build</code> 签名构建</td><td><span class="tag ok">成功</span></td></tr>
+    <tr><td>安装 + 启动（2 in 1 真机）</td><td><span class="tag ok">正常启动，页面加载正常</span></td></tr>
+    <tr><td>默认窗口（浮动窗口）模式</td><td><span class="tag ok">正常（回归无损）</span></td></tr>
+    <tr><td><strong>最大化全屏</strong></td><td><span class="tag ok">白闪消失，用户实测确认「不闪了，修好了」</span></td></tr>
+  </table>
+</section>
+
+<section class="card">
+  <h2><span class="num">6</span>环境信息</h2>
+  <div class="grid2">
+    <div class="kv"><div class="k">设备</div><div class="v">2-in-1 触控设备（具体型号省略）</div></div>
+    <div class="kv"><div class="k">屏幕</div><div class="v">高分辨率触控屏（具体参数省略）</div></div>
+    <div class="kv"><div class="k">窗口模式（默认）</div><div class="v">浮动窗口（具体尺寸省略）</div></div>
+    <div class="kv"><div class="k">窗口模式（最大化）</div><div class="v">接近全屏（具体矩形省略）</div></div>
+    <div class="kv"><div class="k">应用</div><div class="v">io.github.salixqwq.snowlinerally（ArkTS + ArkWeb 承载单文件 HTML 游戏）</div></div>
+    <div class="kv"><div class="k">游戏源</div><div class="v">snowline-rally.html（冻结不改，MD5 c530631b…）</div></div>
+  </div>
+</section>
+
+<section class="card">
+  <h2><span class="num">7</span>相关历史问题（同日修复）</h2>
+  <table>
+    <tr><th>问题</th><th>根因</th><th>修复</th></tr>
+    <tr>
+      <td>应用使用期间<strong>无限白闪循环</strong></td>
+      <td>系统按内存策略回收 Web 渲染进程（SIGKILL）；旧恢复逻辑在每次 <code>onPageEnd</code> 无条件重置崩溃计数，形成「回收 → 刷新 → 重载 → 再回收」死循环</td>
+      <td>Index.ets / RallyBridge.ets：时间感知崩溃预算（<code>STABLE_LOAD_MS = 60_000</code>，页面稳定运行 ≥60 秒才重置计数）；应用不可见时不刷新、仅记录 <code>pendingReloadOnForeground</code> 回前台后单次重载；<code>reloadScheduled</code> 防重复刷新</td>
+    </tr>
+  </table>
+</section>
+
+<section class="card">
+  <h2><span class="num">8</span>经验总结</h2>
+  <ul>
+    <li><strong>「日志正常 + 用户看到异常」时，怀疑合成器以下的显示输出路径</strong>：GPU 帧率、缓冲内容、WMS 事件全正常而用户看到闪，说明缺陷在 DSS / 扫描输出层，日志与截屏均不可见。</li>
+    <li><strong>截屏对照实验是判定利器</strong>：让用户盯着闪烁现场，同时连续截屏做像素统计。截屏零白帧 ⇒ 闪烁在合成器之下；截屏白帧 ⇒ 内容层问题。</li>
+    <li><strong>ArkWeb 渲染模式选择</strong>：ASYNC_RENDER（独立 surface + DSS 硬件合成）在部分设备的最大化场景存在直扫缺陷；出现「仅全屏闪、截屏拍不到」时优先尝试 <code>RenderMode.SYNC_RENDER</code>。</li>
+    <li><strong>「UI 不闪、背景闪」是分层显示的指纹</strong>：不同内容层被分配到不同显示路径（DSS 直扫 vs GPU 合成），只有走问题路径的层受影响。</li>
+    <li>调试工具备忘：<code>hidumper -s WindowManagerService -a '-a'</code> 查窗口 Mode/Z 序/矩形；<code>snapshot_display -f x.png -t png</code> 截屏（注意 .png 后缀必须搭配 <code>-t png</code>，否则报「suffix must be .jpeg」）；纯 Node PNG 解码 + 白度统计可在无图像库环境下完成像素级分析。</li>
+  </ul>
+</section>
+
+<footer>SnowlineRally · 全屏白屏闪烁修复记录 · 2026-11-16 · 修复版本以 app/entry/src/main/ets/pages/Index.ets 为准</footer>
+
+</div>
+</body>
+</html>

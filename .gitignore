@@ -1,0 +1,54 @@
+# Snowline Rally — 入库范围
+# 原则：源码 / 配置模板 / 文档 / 许可证入库；凡是「能重新生成」或「只对本机有意义」的都不入库。
+
+# ── 1. 依赖与构建缓存（体积大、可重建）────────────────────────────
+dev/node_modules/
+app/oh_modules/
+app/.hvigor/
+app/entry/build/
+app/entry/.preview/
+app/entry/.test/
+app/entry/.cxx/
+app/.appanalyzer/
+
+# ── 2. 本机状态（含绝对路径、设备/缓存信息）──────────────────────
+app/.idea/
+app/.bitfun/
+local.properties
+.vscode/
+.DS_Store
+Thumbs.db
+*.log
+
+# ── 3. 签名物料：任何情况下都不入库 ──────────────────────────────
+# dev/certs/ 是本地 HTTPS 调试用的自签证书，私钥泄露等于身份泄露。
+dev/certs/
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.cer
+*.p7b
+# DevEco 会把签名配置（含 keyPassword/storePassword 与 ~/.ohos 绝对路径）
+# 直接写进 app/build-profile.json5：整份文件不入库。仓库只提供
+# app/build-profile.template.json5，他人复制后由 DevEco 生成自己的签名。
+# 详见 README「开源说明」。
+app/build-profile.json5
+
+# ── 4. 安装包产物 ───────────────────────────────────────────────
+*.hap
+*.app
+*.appex
+
+# ── 5. 历史快照与内部过程记录（不入库）──────────────────────────
+# v3~v7 旧构建快照移到 refer/html/archive/ 本地留存，不入库（约 4.6 MB）。
+refer/html/archive/
+# 本地留存的工作稿与一次性脚本（仅本机使用，不入库）。
+dev/rewrite/
+dev/tools/similarity.mjs
+# 17 个一次性物理调参脚本：只保留 README 引用的两个回归脚本，其余本地留存。
+dev/test-*.mjs
+!dev/test-physics.mjs
+!dev/test-track.mjs

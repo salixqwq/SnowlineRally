@@ -1,0 +1,23 @@
+# 行尾统一为 LF（避免 Windows 下 hvigor/ArkTS 配置出现无意义 diff）
+* text=auto eol=lf
+
+# 二进制资源：不做行尾转换、不做文本 diff
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.webp binary
+*.ico binary
+*.hap binary
+*.app binary
+*.p12 binary
+*.pfx binary
+*.jks binary
+*.keystore binary
+*.cer binary
+*.p7b binary
+*.pem binary
+*.key binary
+
+# 构建产物：内容由源码生成，在 GitHub 上折叠显示、不计入语言统计
+refer/html/snowline-rally.html linguist-generated=true
+app/entry/src/main/resources/rawfile/*.html linguist-generated=true

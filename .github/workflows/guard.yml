@@ -1,0 +1,29 @@
+name: guard
+
+# 防止签名物料、口令、本机绝对路径进入仓库。
+# 注意：这里只做静态检查，不构建 HAP（那需要 DevEco SDK 与个人签名）。
+on:
+  push:
+  pull_request:
+
+jobs:
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scan for signing material and local paths
+        run: |
+          set -e
+          if git grep -nE '"(keyPassword|storePassword)"|/storage/Users/|/Users/[^/]+/\.ohos|com\.example\.snowlinerally|BEGIN [A-Z ]*PRIVATE KEY' -- \
+               ':!.github/**' ':!.githooks/**'; then
+            echo "::error::发现签名口令或本机绝对路径，见上方文件与行号"
+            exit 1
+          fi
+          echo "clean"
+      - name: Ensure build-profile.json5 is not tracked
+        run: |
+          if git ls-files --error-unmatch app/build-profile.json5 >/dev/null 2>&1; then
+            echo "::error::app/build-profile.json5 不应入库（含个人签名配置）"
+            exit 1
+          fi
+          echo "build-profile.json5 not tracked"

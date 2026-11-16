@@ -1,0 +1,16 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "雪线拉力游戏主模块"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "雪线拉力单文件拉力赛"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "雪线拉力"
+    }
+  ]
+}

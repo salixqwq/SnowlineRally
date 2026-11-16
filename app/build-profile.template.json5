@@ -1,0 +1,52 @@
+// Snowline Rally — DevEco 工程配置模板
+//
+// 这个文件不含任何签名物料，可以安全入库；真正的 app/build-profile.json5 已被
+// .gitignore 排除，永远不会提交。
+//
+// 首次构建前：
+//   1) cp app/build-profile.template.json5 app/build-profile.json5
+//   2) DevEco Studio 打开工程 → File → Project Structure → Signing Configs
+//      → 勾选 "Automatically generate signature"
+//      DevEco 会把你的证书路径、keyAlias、口令写进 app/build-profile.json5。
+//   3) 构建前确认 `git status` 里看不到 build-profile.json5 —— 它必须保持 ignore 状态。
+{
+  "app": {
+    "signingConfigs": [],
+    "products": [
+      {
+        "name": "default",
+        "targetSdkVersion": "26.0.0",
+        "compatibleSdkVersion": "26.0.0",
+        "runtimeOS": "HarmonyOS",
+        "buildOption": {
+          "strictMode": {
+            "caseSensitiveCheck": true,
+            "useNormalizedOHMUrl": true
+          }
+        }
+      }
+    ],
+    "buildModeSet": [
+      {
+        "name": "debug"
+      },
+      {
+        "name": "release"
+      }
+    ]
+  },
+  "modules": [
+    {
+      "name": "entry",
+      "srcPath": "./entry",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    }
+  ]
+}

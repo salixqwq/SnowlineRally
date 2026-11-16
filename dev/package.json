@@ -1,0 +1,19 @@
+{
+  "name": "snowline-rally-dev",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Build toolchain and offline test harness for the Snowline Rally single-file game",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "build": "node build.mjs",
+    "test": "node test-track.mjs && node test-physics.mjs && node tools/hud-smoke.mjs",
+    "preview": "node tools/preview.mjs",
+    "preview:cockpit": "node tools/cockpit-preview.mjs",
+    "serve": "node tools/serve.mjs ../refer/html 8123"
+  },
+  "dependencies": {
+    "esbuild": "^0.28.2",
+    "three": "^0.180.0"
+  }
+}
